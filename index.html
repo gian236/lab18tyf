@@ -1,0 +1,1174 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Lab 18 · Signal, Safety Number y Túnel WireGuard · TechFreedom</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #070d18;
+      --bg-gradient: radial-gradient(circle at 85% 0%, #173256 0%, transparent 40rem), radial-gradient(circle at 10% 90%, #152035 0%, transparent 35rem);
+      --panel: #0e1726;
+      --panel-alt: #132035;
+      --panel-card: linear-gradient(145deg, #152238, #0d1625);
+      --line: #223550;
+      --line-bright: #355177;
+      --ink: #eef4fc;
+      --muted: #9ab0cb;
+      --cyan: #66e5d3;
+      --cyan-glow: rgba(102, 229, 211, 0.15);
+      --blue: #8db4ff;
+      --good: #8ff0b0;
+      --gold: #ffd477;
+      --pink: #ff7f9d;
+      --purple: #c084fc;
+      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      --font-mono: 'JetBrains Mono', Consolas, Monaco, monospace;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      background: var(--bg-gradient), var(--bg);
+      background-attachment: fixed;
+      color: var(--ink);
+      font-family: var(--font-sans);
+      font-size: 15.5px;
+      line-height: 1.65;
+    }
+
+    a { color: var(--cyan); text-decoration: none; transition: color 0.2s; }
+    a:hover { color: #a5f3fc; text-decoration: underline; }
+
+    .wrap {
+      width: min(1200px, calc(100% - 48px));
+      margin: auto;
+    }
+
+    /* HEADER & HERO */
+    header {
+      padding: 72px 0 54px;
+      border-bottom: 1px solid var(--line);
+      background: linear-gradient(180deg, rgba(7, 13, 24, 0.8) 0%, rgba(14, 23, 38, 0.4) 100%);
+      backdrop-filter: blur(12px);
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: 1.25fr 0.75fr;
+      gap: 48px;
+      align-items: center;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--cyan);
+      font-size: 0.8rem;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      margin-bottom: 14px;
+    }
+
+    .eyebrow::before {
+      content: '';
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--cyan);
+      box-shadow: 0 0 10px var(--cyan);
+    }
+
+    h1 {
+      font-size: clamp(2.8rem, 6vw, 4.4rem);
+      line-height: 1.05;
+      letter-spacing: -0.04em;
+      margin: 0 0 20px;
+      font-weight: 800;
+    }
+
+    h1 span {
+      background: linear-gradient(120deg, var(--cyan) 0%, var(--blue) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .lead {
+      color: var(--muted);
+      font-size: 1.15rem;
+      max-width: 680px;
+      margin: 0;
+    }
+
+    .hero-card {
+      background: var(--panel-card);
+      border: 1px solid var(--line-bright);
+      border-radius: 20px;
+      padding: 26px;
+      box-shadow: 0 20px 45px rgba(0, 0, 0, 0.4);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-card::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 150px;
+      height: 150px;
+      background: radial-gradient(circle at 100% 0%, var(--cyan-glow), transparent 70%);
+      pointer-events: none;
+    }
+
+    .hero-card .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 12px;
+      border-radius: 999px;
+      background: rgba(143, 240, 176, 0.12);
+      border: 1px solid var(--good);
+      color: var(--good);
+      font-size: 0.76rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+
+    .hero-card strong {
+      display: block;
+      font-size: 2.1rem;
+      color: var(--good);
+      letter-spacing: -0.02em;
+      margin-bottom: 4px;
+    }
+
+    .hero-card p {
+      color: var(--muted);
+      margin: 0 0 16px;
+      font-size: 0.92rem;
+    }
+
+    .hero-meta {
+      border-top: 1px solid var(--line);
+      padding-top: 16px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      font-size: 0.85rem;
+    }
+
+    .hero-meta span {
+      display: block;
+      color: var(--muted);
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .hero-meta code {
+      color: var(--cyan);
+      font-family: var(--font-mono);
+      font-size: 0.84rem;
+    }
+
+    /* NAVIGATION BAR */
+    .nav-bar {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(7, 13, 24, 0.88);
+      backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--line);
+      padding: 10px 0;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 10px;
+      overflow-x: auto;
+      padding-bottom: 2px;
+    }
+
+    .nav-link {
+      color: var(--muted);
+      font-size: 0.85rem;
+      font-weight: 600;
+      padding: 6px 14px;
+      border-radius: 999px;
+      border: 1px solid transparent;
+      white-space: nowrap;
+      transition: all 0.2s;
+    }
+
+    .nav-link:hover, .nav-link.active {
+      color: var(--ink);
+      background: var(--panel-alt);
+      border-color: var(--line-bright);
+      text-decoration: none;
+    }
+
+    /* SECTIONS */
+    section {
+      padding: 64px 0;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .section-title {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      gap: 20px;
+      border-bottom: 1px solid var(--line);
+      padding-bottom: 16px;
+      margin-bottom: 30px;
+    }
+
+    .section-title h2 {
+      font-size: 2.1rem;
+      letter-spacing: -0.03em;
+      margin: 0;
+      font-weight: 700;
+      color: var(--ink);
+    }
+
+    .section-title p {
+      color: var(--muted);
+      margin: 0;
+      font-size: 0.95rem;
+      text-align: right;
+    }
+
+    /* CARDS & METRICS GRID */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 18px;
+    }
+
+    .card {
+      background: var(--panel-card);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 22px;
+      transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .card:hover {
+      transform: translateY(-2px);
+      border-color: var(--line-bright);
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
+    }
+
+    .tag {
+      display: inline-block;
+      color: var(--cyan);
+      background: rgba(102, 229, 211, 0.08);
+      border: 1px solid rgba(102, 229, 211, 0.3);
+      border-radius: 999px;
+      padding: 3px 10px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 10px;
+    }
+
+    .metric {
+      font-size: 2rem;
+      font-weight: 800;
+      color: var(--cyan);
+      line-height: 1.1;
+      margin-bottom: 6px;
+      font-family: var(--font-mono);
+    }
+
+    .metric.good { color: var(--good); }
+    .metric.gold { color: var(--gold); }
+    .metric.blue { color: var(--blue); }
+
+    .card h3 {
+      font-size: 1.15rem;
+      margin: 0 0 8px;
+      color: var(--ink);
+    }
+
+    .card p {
+      color: var(--muted);
+      margin: 0;
+      font-size: 0.92rem;
+    }
+
+    /* FLOW / STEPS */
+    .flow {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+    }
+
+    .step {
+      position: relative;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 20px;
+    }
+
+    .step:not(:last-child)::after {
+      content: '→';
+      position: absolute;
+      right: -14px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--cyan);
+      font-size: 1.4rem;
+      z-index: 2;
+    }
+
+    .step b {
+      display: block;
+      color: var(--cyan);
+      font-size: 0.78rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+
+    .step span {
+      color: var(--muted);
+      font-size: 0.9rem;
+      display: block;
+    }
+
+    /* TABLES */
+    .table-container {
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      overflow: hidden;
+      background: var(--panel);
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+    }
+
+    th, td {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--line);
+      vertical-align: middle;
+    }
+
+    th {
+      background: #142033;
+      color: var(--cyan);
+      font-size: 0.84rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      font-weight: 700;
+    }
+
+    td {
+      color: var(--muted);
+      font-size: 0.93rem;
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+
+    tr:hover td {
+      background: rgba(255, 255, 255, 0.015);
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .badge-no-read {
+      background: rgba(143, 240, 176, 0.12);
+      border: 1px solid var(--good);
+      color: var(--good);
+    }
+
+    .badge-knows {
+      background: rgba(255, 212, 119, 0.12);
+      border: 1px solid var(--gold);
+      color: var(--gold);
+    }
+
+    /* CALLOUT BOXES */
+    .callout {
+      border-left: 4px solid var(--cyan);
+      background: rgba(16, 32, 54, 0.7);
+      border-radius: 0 14px 14px 0;
+      padding: 18px 22px;
+      color: #dbe7f7;
+      margin: 20px 0;
+      border: 1px solid var(--line);
+      border-left: 4px solid var(--cyan);
+    }
+
+    .callout.alert {
+      border-left-color: var(--pink);
+      background: rgba(45, 20, 30, 0.6);
+      color: #ffd8e4;
+    }
+
+    .callout.chat-pill {
+      border-left-color: var(--gold);
+      background: rgba(36, 30, 18, 0.7);
+      color: #fff3d6;
+    }
+
+    .callout strong {
+      color: var(--ink);
+    }
+
+    /* COPY BUTTON */
+    .copy-box {
+      background: #09101c;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 14px 18px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      margin-top: 10px;
+    }
+
+    .copy-box code {
+      font-family: var(--font-mono);
+      font-size: 0.88rem;
+      color: var(--cyan);
+      word-break: break-all;
+    }
+
+    .copy-btn {
+      background: #172740;
+      border: 1px solid var(--line-bright);
+      color: var(--ink);
+      padding: 6px 14px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.8rem;
+      font-weight: 600;
+      transition: all 0.2s;
+      flex-shrink: 0;
+    }
+
+    .copy-btn:hover {
+      background: var(--cyan);
+      color: #070d18;
+      border-color: var(--cyan);
+    }
+
+    /* TWO COLUMNS */
+    .two {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 22px;
+    }
+
+    .list {
+      margin: 0;
+      padding-left: 20px;
+      color: var(--muted);
+    }
+
+    .list li {
+      margin: 10px 0;
+    }
+
+    /* EVIDENCE GALLERY */
+    .shots {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+      margin-top: 24px;
+    }
+
+    .shot {
+      margin: 0;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      transition: border-color 0.2s, transform 0.2s;
+    }
+
+    .shot:hover {
+      border-color: var(--cyan);
+      transform: translateY(-3px);
+    }
+
+    .shot-img-wrapper {
+      position: relative;
+      cursor: pointer;
+      overflow: hidden;
+      border-radius: 10px;
+      background: #050912;
+      height: 240px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .shot img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      transition: transform 0.3s;
+    }
+
+    .shot:hover img {
+      transform: scale(1.02);
+    }
+
+    .shot-zoom-hint {
+      position: absolute;
+      bottom: 8px;
+      right: 8px;
+      background: rgba(7, 13, 24, 0.85);
+      border: 1px solid var(--line);
+      color: var(--cyan);
+      padding: 4px 8px;
+      border-radius: 6px;
+      font-size: 0.72rem;
+      font-weight: 600;
+      backdrop-filter: blur(4px);
+    }
+
+    .shot figcaption {
+      padding: 14px 6px 4px;
+      color: var(--muted);
+      font-size: 0.88rem;
+      flex-grow: 1;
+    }
+
+    .shot strong {
+      color: var(--ink);
+      display: block;
+      font-size: 0.95rem;
+      margin-bottom: 4px;
+    }
+
+    /* ESSAY CONTENT */
+    .essay-card {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 32px;
+      margin-bottom: 24px;
+    }
+
+    .essay-card h3 {
+      font-size: 1.35rem;
+      margin: 0 0 16px;
+      color: var(--cyan);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .essay-card p {
+      color: #cfdeee;
+      font-size: 1rem;
+      line-height: 1.75;
+      margin: 0 0 16px;
+    }
+
+    .essay-card p:last-child {
+      margin-bottom: 0;
+    }
+
+    .cite-box {
+      background: #09111e;
+      border-left: 3px solid var(--purple);
+      padding: 14px 18px;
+      border-radius: 0 10px 10px 0;
+      margin-top: 16px;
+      font-size: 0.88rem;
+      color: var(--muted);
+    }
+
+    .cite-box a {
+      color: var(--purple);
+      font-weight: 600;
+    }
+
+    /* MODAL LIGHTBOX */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(5, 9, 16, 0.92);
+      backdrop-filter: blur(10px);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .modal.open {
+      display: flex;
+    }
+
+    .modal-content {
+      max-width: 90vw;
+      max-height: 90vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .modal-content img {
+      max-width: 100%;
+      max-height: 82vh;
+      border-radius: 12px;
+      border: 1px solid var(--line-bright);
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.8);
+      object-fit: contain;
+    }
+
+    .modal-caption {
+      margin-top: 14px;
+      color: var(--ink);
+      font-size: 1rem;
+      text-align: center;
+    }
+
+    .modal-close {
+      position: absolute;
+      top: 20px;
+      right: 26px;
+      background: #172740;
+      border: 1px solid var(--line-bright);
+      color: var(--ink);
+      font-size: 1.5rem;
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    }
+
+    .modal-close:hover {
+      background: var(--cyan);
+      color: #070d18;
+    }
+
+    /* FOOTER */
+    footer {
+      border-top: 1px solid var(--line);
+      padding: 48px 0 64px;
+      color: var(--muted);
+      background: #060b13;
+    }
+
+    .links {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 18px;
+    }
+
+    .links a {
+      border: 1px solid #2b4060;
+      border-radius: 999px;
+      padding: 8px 16px;
+      background: #0d1726;
+      font-size: 0.85rem;
+      color: var(--ink);
+    }
+
+    .links a:hover {
+      border-color: var(--cyan);
+      color: var(--cyan);
+      text-decoration: none;
+    }
+
+    /* RESPONSIVE */
+    @media (max-width: 960px) {
+      .hero, .two { grid-template-columns: 1fr; }
+      .grid { grid-template-columns: 1fr 1fr; }
+      .flow { grid-template-columns: 1fr 1fr; }
+      .step:not(:last-child)::after { display: none; }
+      .shots { grid-template-columns: 1fr; }
+      .section-title { flex-direction: column; align-items: flex-start; gap: 6px; }
+      .section-title p { text-align: left; }
+    }
+
+    @media (max-width: 600px) {
+      .grid, .flow { grid-template-columns: 1fr; }
+      .table-container { overflow-x: auto; }
+      table { min-width: 580px; }
+      h1 { font-size: 2.5rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- HERO HEADER -->
+  <header>
+    <div class="wrap hero">
+      <div>
+        <div class="eyebrow">Lab 18 · Sesión 21 · TechFreedom</div>
+        <h1>Signal E2EE &<br><span>Túnel WireGuard</span></h1>
+        <p class="lead">Verificación de Safety Number presencial, modelo de amenazas y metadatos de Signal, despliegue de túnel P2P con WireGuard y análisis criptográfico de E2EE frente a mandatos de acceso excepcional.</p>
+      </div>
+
+      <div class="hero-card">
+        <div class="status-pill">Túnel P2P Verificado</div>
+        <strong>Handshake OK</strong>
+        <p>WireGuard oficial Windows ↔ iOS · AllowedIPs /32 estricto · Payload cifrado ChaCha20-Poly1305.</p>
+        <div class="hero-meta">
+          <div>
+            <span>Endpoint Peer 1</span>
+            <code>192.168.0.10:56355</code>
+          </div>
+          <div>
+            <span>Dirección VPN</span>
+            <code>10.77.0.2 / 32</code>
+          </div>
+          <div>
+            <span>Keys Privadas</span>
+            <code style="color:var(--good);">(hidden) · 0 filtraciones</code>
+          </div>
+          <div>
+            <span>Safety Number</span>
+            <code style="color:var(--cyan);">Marcado Verificado</code>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- NAVIGATION -->
+  <nav class="nav-bar">
+    <div class="wrap nav-links">
+      <a href="#metricas" class="nav-link">Métricas Clave</a>
+      <a href="#parte-a" class="nav-link">Parte A: Safety Number</a>
+      <a href="#parte-b" class="nav-link">Parte B: Metadatos Signal</a>
+      <a href="#wireguard" class="nav-link">Túnel WireGuard</a>
+      <a href="#evidencias" class="nav-link">Evidencias WireGuard</a>
+      <a href="#e2ee-essay" class="nav-link">Ensayo E2EE & Mandatos</a>
+    </div>
+  </nav>
+
+  <main class="wrap">
+
+    <!-- METRICAS DE CUMPLIMIENTO -->
+    <section id="metricas">
+      <div class="section-title">
+        <h2>Verificaciones del Laboratorio</h2>
+        <p>resumen ejecutivo de control y seguridad</p>
+      </div>
+      <div class="grid">
+        <article class="card">
+          <span class="tag">SIGNAL E2EE</span>
+          <div class="metric good">VERIFIED</div>
+          <h3>Safety Number</h3>
+          <p>Huella criptográfica comparada presencialmente con el compañero mediante QR/dígitos.</p>
+        </article>
+
+        <article class="card">
+          <span class="tag">METADATOS</span>
+          <div class="metric gold">SEALED</div>
+          <h3>Remitente Sellado</h3>
+          <p>El servidor Signal enruta sin conocer la identidad del remitente en el sobre cifrado.</p>
+        </article>
+
+        <article class="card">
+          <span class="tag">WIREGUARD P2P</span>
+          <div class="metric blue">10.77.0.2/32</div>
+          <h3>AllowedIPs Restrictivo</h3>
+          <p>Sin full-tunnel; tráfico confinado exclusivamente al peer autorizado del laboratorio.</p>
+        </article>
+
+        <article class="card">
+          <span class="tag">TRANSFERENCIA</span>
+          <div class="metric good">> 0 KiB</div>
+          <h3>Tráfico Bidireccional</h3>
+          <p>1.12 KiB recibidos y 2.33 KiB transmitidos con ping ICMP exitoso entre interfaces.</p>
+        </article>
+      </div>
+    </section>
+
+    <!-- KICKOFF PARTE A: SAFETY NUMBER -->
+    <section id="parte-a">
+      <div class="section-title">
+        <h2>Parte A · Signal Oficial & Safety Number</h2>
+        <p>verificación presencial de clave de identidad</p>
+      </div>
+
+      <div class="two">
+        <div class="card">
+          <span class="tag">PROTOCOLO SIGNAL</span>
+          <h3>Procedimiento de Verificación</h3>
+          <p>El Safety Number fue contrastado presencialmente con un compañero utilizando los dígitos numéricos y el código QR nativos provistos por el cliente oficial de Signal (Signal Protocol). Una vez confirmada la coincidencia exacta de ambos bloques criptográficos, la conversación fue marcada en el cliente como <strong>Verified</strong>.</p>
+          <div class="callout" style="margin-top:16px">
+            <strong>Garantía Criptográfica:</strong> El Safety Number es una representación formateada (huella SHA-512) generada a partir de las Identity Keys de largo plazo de ambos participantes, permitiendo autenticar la sesión fuera de banda.
+          </div>
+        </div>
+
+        <div class="card">
+          <span class="tag">MODELO DE AMENAZAS</span>
+          <h3>¿Qué ataque detectaría un Safety Number que no coincide?</h3>
+          <p>Si el Safety Number no coincide entre ambos teléfonos, el protocolo alerta de dos posibles eventos:</p>
+          <ul class="list">
+            <li><strong>Ataque Man-in-the-Middle (MITM):</strong> Un adversario (o el propio servidor de Signal si estuviera comprometido) sustituye las claves públicas de los usuarios para interponerse, descifrar y volver a cifrar el tráfico.</li>
+            <li><strong>Sustitución de Identidad o Compromiso de Dispositivo:</strong> Indica que el peer reinstaló la aplicación en un nuevo dispositivo, cambió su Identity Key o su cuenta fue secuestrada/duplicada en otra terminal.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- KICKOFF PARTE B: TABLA SERVIDOR SABE / NO LEE -->
+    <section id="parte-b">
+      <div class="section-title">
+        <h2>Parte B · ¿Qué sabe y qué no lee el servidor?</h2>
+        <p>análisis de fuga de metadatos frente a confidencialidad</p>
+      </div>
+
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th style="width: 26%;">Elemento / Parámetro</th>
+              <th style="width: 18%;">Estado en Servidor</th>
+              <th>Mecanismo Criptográfico / Razón Técnica</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Texto del mensaje</strong></td>
+              <td><span class="badge badge-no-read">SERVIDOR NO LEE</span></td>
+              <td>Cifrado E2EE mediante el Signal Protocol (Double Ratchet + Curve25519 + ChaCha20-Poly1305 / AES-GCM). Solo los dispositivos finales poseen las claves para descifrar.</td>
+            </tr>
+            <tr>
+              <td><strong>Que la cuenta existe</strong></td>
+              <td><span class="badge badge-knows">SERVIDOR SÍ SABE</span></td>
+              <td>La cuenta está registrada en la base de datos de Signal, mapeada a un número de teléfono o username tokenizado para permitir el contacto inicial.</td>
+            </tr>
+            <tr>
+              <td><strong>Cuándo se conectó el dispositivo</strong></td>
+              <td><span class="badge badge-knows">SERVIDOR SÍ SABE</span></td>
+              <td>El servidor registra las aperturas y cierres de sockets de red (TCP / TLS / WebSocket) para entregar mensajes en cola o push notifications.</td>
+            </tr>
+            <tr>
+              <td><strong>Tamaño aproximado</strong></td>
+              <td><span class="badge badge-knows">SERVIDOR SÍ SABE</span></td>
+              <td>La longitud en bytes del paquete de red es visible en tránsito para el router y servidor, aunque Signal aplica padding aleatorio (PKCS#7) para reducir fingerprinting de patrones de longitud.</td>
+            </tr>
+            <tr>
+              <td><strong>Quién envió (Sealed Sender)</strong></td>
+              <td><span class="badge badge-no-read">SERVIDOR NO LEE</span></td>
+              <td>Con <em>Sealed Sender</em>, la identidad del emisor viaja encapsulada dentro del sobre cifrado con un token de entrega. El servidor solo sabe a qué destino entregar el payload, no quién lo emitió.</td>
+            </tr>
+            <tr>
+              <td><strong>IP mientras está conectado</strong></td>
+              <td><span class="badge badge-knows">SERVIDOR SÍ SABE</span></td>
+              <td>La dirección IP pública de origen es técnicamente requerida por la capa de transporte IP para sostener la sesión de socket TCP activa en tiempo real.</td>
+            </tr>
+            <tr>
+              <td><strong>Lista de contactos / grupos</strong></td>
+              <td><span class="badge badge-no-read">SERVIDOR NO LEE</span></td>
+              <td>Los miembros de grupos usan claves de grupo simétricas y credenciales anónimas. El descubrimiento de contactos se realiza con enclaves SGX (Private Contact Discovery) y Secure Value Recovery.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="two" style="margin-top: 24px;">
+        <div class="card">
+          <span class="tag">CONTRASTE CON BIG BROTHER</span>
+          <h3>En tránsito vs Lo que el proveedor guarda</h3>
+          <p>El repositorio legal de <a href="https://signal.org/bigbrother/" target="_blank">Signal Big Brother</a> muestra las respuestas oficiales de Signal ante citaciones y órdenes judiciales federales (subpoenas de tribunales de EE.UU.).</p>
+          <ul class="list">
+            <li><strong>En tránsito:</strong> El servidor procesa momentáneamente la IP pública y timestamps del socket TCP activo para enrutar los paquetes.</li>
+            <li><strong>En reposo (lo que puede entregar):</strong> Signal opera bajo una arquitectura de minimización de datos estricta. Lo <em>único</em> que Signal puede entregar ante la ley es:
+              <br>1) <em>Fecha y hora de creación de la cuenta</em>.
+              <br>2) <em>Fecha y hora del último intento de conexión</em>.
+            </li>
+          </ul>
+        </div>
+
+        <div class="card">
+          <span class="tag">CIERRE DE LABORATORIO</span>
+          <h3>Declaración para el Chat del Lab</h3>
+          <p>Síntesis formal solicitada para el cierre de la sesión práctica:</p>
+          
+          <div class="callout chat-pill">
+            <strong>Safety number verified:</strong> sí
+          </div>
+          
+          <div class="copy-box">
+            <code>El servidor no puede leer el texto del mensaje, los miembros de grupos, la libreta de contactos ni el remitente con Sealed Sender, pero sí sabe que la cuenta existe, los timestamps de socket y la IP pública efímera mientras está conectado.</code>
+            <button class="copy-btn" onclick="copyText(this)">Copiar</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- HOMEWORK WIREGUARD -->
+    <section id="wireguard">
+      <div class="section-title">
+        <h2>Homework · Despliegue de Túnel WireGuard P2P</h2>
+        <p>topología peer-to-peer y control estricto de rutas</p>
+      </div>
+
+      <div class="flow">
+        <div class="step">
+          <b>01 · Generación de Keys</b>
+          <span>Se crearon llaves asimétricas Curve25519 en ambos peers de forma independiente.</span>
+        </div>
+        <div class="step">
+          <b>02 · Intercambio Público</b>
+          <span>Solo se intercambiaron las PublicKeys. Las PrivateKeys nunca salieron de los hosts.</span>
+        </div>
+        <div class="step">
+          <b>03 · Enrutamiento /32</b>
+          <span>Configuración de <code>AllowedIPs = 10.77.0.2/32</code> para evitar full-tunnel accidental.</span>
+        </div>
+        <div class="step">
+          <b>04 · Handshake & Ping</b>
+          <span>Negociación Noise IK en UDP 51820 y verificación bidireccional mediante ICMP.</span>
+        </div>
+      </div>
+
+      <div class="two" style="margin-top: 24px;">
+        <div class="card">
+          <span class="tag">CONFIGURACIÓN TÉCNICA</span>
+          <h3>Topología Peer-to-Peer del Laboratorio</h3>
+          <ul class="list">
+            <li><strong>Peer 1 (Windows Host - Laptop):</strong>
+              <br>IP VPN: <code>10.77.0.1/32</code> | Listening Port: <code>51820</code>
+              <br>Public Key: <code>1lMNcDBm/XkW98Oxzk/ItxIULY9mKqDzas0DC9ilJwc=</code>
+              <br>Private Key: <code>(hidden)</code> — Resguardada localmente.
+            </li>
+            <li><strong>Peer 2 (iOS Client - iPhone):</strong>
+              <br>IP VPN: <code>10.77.0.2/32</code> | Endpoint: <code>192.168.0.10:56355</code>
+              <br>Public Key: <code>FSfdR7LCsekYRaZjFmcum6N7Glu1tf9qhv7a5+To22Q=</code>
+              <br>Subred de pruebas autorizada: <code>192.168.0.0/24</code>
+            </li>
+          </ul>
+        </div>
+
+        <div class="card">
+          <span class="tag">VISIBILIDAD DE RED</span>
+          <h3>¿Qué ve la red vs qué ve el otro peer?</h3>
+          <p>Demostración del aislamiento y encapsulamiento criptográfico del protocolo Noise:</p>
+          <div class="callout" style="margin-top: 12px;">
+            <strong>Mi ISP / la red local ve:</strong> Paquetes UDP dirigidos al puerto 51820 con payload ininteligible cifrado con ChaCha20-Poly1305 entre <code>192.168.0.3</code> y <code>192.168.0.10</code>, junto con el volumen y frecuencia de paquetes.
+          </div>
+          <div class="callout" style="margin-top: 10px; border-left-color: var(--good); background: rgba(18, 38, 28, 0.7);">
+            <strong>El otro peer del túnel ve:</strong> El flujo IP descifrado correspondiente a la interfaz interna virtual (<code>10.77.0.1 ↔ 10.77.0.2</code>), incluyendo las solicitudes y respuestas de eco ICMP (ping).
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top: 20px;">
+        <span class="tag">HIGIENE Y DESMANTELAMIENTO</span>
+        <h3>Cierre del Túnel</h3>
+        <p>Finalizadas las pruebas de handshake y verificación de bytes transferidos (>0 KiB), el túnel fue detenido y la interfaz <code>lab18</code> fue desactivada en ambos extremos, garantizando que no queden puertos UDP de escucha abiertos ni servicios expuestos de forma permanente.</p>
+      </div>
+    </section>
+
+    <!-- EVIDENCIAS WIREGUARD -->
+    <section id="evidencias">
+      <div class="section-title">
+        <h2>Evidencias del Túnel WireGuard</h2>
+        <p>capturas de ejecución de terminal y logs de sesión</p>
+      </div>
+
+      <div class="shots">
+        <!-- Evidencia 1 -->
+        <figure class="shot">
+          <div class="shot-img-wrapper" onclick="openModal('image.png', 'PowerShell: wg show en Windows mostrando handshake reciente, AllowedIPs /32, transferencia y ping exitoso')">
+            <img src="image.png" alt="wg show en PowerShell y ping 10.77.0.2">
+            <span class="shot-zoom-hint">🔍 Clic para ampliar</span>
+          </div>
+          <figcaption>
+            <strong>image.png · Estado wg show en Windows</strong>
+            PowerShell con privilegios de administrador. Interfaz <code>lab18</code>, handshake hace 21s / 1m 01s, 1.12 KiB recibidos / 2.33 KiB enviados y comando <code>ping 10.77.0.2</code>. Clave privada oculta.
+          </figcaption>
+        </figure>
+
+        <!-- Evidencia 2 -->
+        <figure class="shot">
+          <div class="shot-img-wrapper" onclick="openModal('image copy.png', 'Log de WireGuard Windows GUI: Handshake initiation, handshake response y rotación de keypairs')">
+            <img src="image copy.png" alt="Log de WireGuard Windows GUI">
+            <span class="shot-zoom-hint">🔍 Clic para ampliar</span>
+          </div>
+          <figcaption>
+            <strong>image copy.png · Log del GUI de WireGuard (Windows)</strong>
+            Registro de eventos TUN: Recepción de keepalive packets desde <code>192.168.0.10:56355</code>, <code>Receiving handshake initiation</code>, <code>Sending handshake response</code> y destrucción/creación de keypairs.
+          </figcaption>
+        </figure>
+
+        <!-- Evidencia 3 -->
+        <figure class="shot">
+          <div class="shot-img-wrapper" onclick="openModal('image copy 2.png', 'Log de WireGuard iOS: Sincronización UAPI, keepalives y endpoint mapping')">
+            <img src="image copy 2.png" alt="Log de WireGuard iOS">
+            <span class="shot-zoom-hint">🔍 Clic para ampliar</span>
+          </div>
+          <figcaption>
+            <strong>image copy 2.png · Log de WireGuard en Móvil (iOS)</strong>
+            Cliente móvil oficial de WireGuard. Registros de red mostrando detección de ruta satisfecha, actualización UAPI del endpoint de <code>peer(1lMN...ljwc)</code> y envío de paquetes keepalive hacia la laptop.
+          </figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <!-- ESSAY E2EE.md -->
+    <section id="e2ee-essay">
+      <div class="section-title">
+        <h2>Homework · Documento E2EE.md</h2>
+        <p>análisis de forward secrecy, acceso excepcional y comparación de ventures</p>
+      </div>
+
+      <div class="essay-card">
+        <h3>1. Forward Secrecy y Post-Compromise Security</h3>
+        <p>La <strong>forward secrecy (FS)</strong> significa que el compromiso de una clave actual no debería permitir descifrar automáticamente las comunicaciones pasadas. En Signal, las claves se actualizan durante la conversación, por lo que una clave comprometida no debería revelar todo el historial anterior. Sin embargo, si el atacante obtiene acceso al teléfono desbloqueado, puede leer el historial que esté almacenado en texto plano dentro del dispositivo.</p>
+        <p>La <strong>post-compromise security (PCS)</strong> se refiere a la capacidad de recuperar la seguridad después de una intrusión. Si el atacante pierde el acceso y Signal puede continuar actualizando las claves mediante nuevos intercambios, los mensajes futuros pueden volver a estar protegidos. Esto depende de que el dispositivo deje de estar comprometido y de que las identidades puedan verificarse nuevamente mediante el Safety Number. La PCS no borra automáticamente el historial que el atacante ya haya copiado.</p>
+        <p>WireGuard también utiliza claves de sesión efímeras durante sus handshakes, por lo que el compromiso de una clave no debería revelar todas las sesiones anteriores. No obstante, WireGuard protege principalmente el trayecto entre dos peers. Si uno de los endpoints está comprometido, el atacante puede observar el tráfico después de que sea descifrado en ese dispositivo.</p>
+      </div>
+
+      <div class="essay-card">
+        <h3>2. Mandatos de Acceso Excepcional: Signal vs WireGuard</h3>
+        <p>Un mandato de acceso excepcional contra Signal tendría que modificar el protocolo, obligar al proveedor a guardar claves adicionales o introducir una forma especial de descifrar mensajes. Eso debilitaría la separación entre las claves y aumentaría el riesgo de abuso o filtración. El artículo <em>Keys Under Doormats</em> explica que este tipo de acceso excepcional agrega complejidad y puede debilitar propiedades como la forward secrecy, afectando potencialmente a todos los usuarios.</p>
+        <p>En WireGuard, el proveedor del túnel normalmente no puede leer el contenido protegido sin las claves privadas de los peers. Para crear un acceso excepcional tendría que agregar un nuevo peer, obtener una clave privada, modificar la configuración o comprometer uno de los endpoints. En ese caso, el acceso no sería una función transparente del protocolo, sino una modificación de la configuración o una intrusión en un dispositivo.</p>
+        
+        <div class="cite-box">
+          <strong>Referencia Académica Obligatoria:</strong> Abelson et al. (2015). <em>Keys Under Doormats: Mandating insecurity by requiring government access to all data and communications</em>. Journal of Cybersecurity, 1(1), 69–79. <a href="https://academic.oup.com/cybersecurity/article/1/1/69/2367066" target="_blank">DOI: 10.1093/cybsec/tyv009</a>
+        </div>
+      </div>
+
+      <div class="essay-card">
+        <h3>3. Síntesis para el Venture (Pactrail)</h3>
+        <p style="font-size: 1.12rem; font-weight: 600; color: var(--ink);">
+          Para nuestro venture Pactrail: Tor oculta el origen de red de las partes frente a observadores del escrow, Signal protege la mensajería y acuerdos confidenciales con E2EE frente al servidor, y WireGuard cifra el enlace de transporte entre peers de validación sin brindar anonimato.
+        </p>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="wrap">
+      <div class="eyebrow">Lab 18 · Entregable Oficial</div>
+      <p>Signal E2EE, Safety Number presencial, túnel WireGuard P2P verificado y análisis de acceso excepcional para TechFreedom (8vo Semestre).</p>
+      <div class="links">
+        <a href="E2EE.md">E2EE.md (Ensayo Completo)</a>
+        <a href="../Lab17/index.html">Lab 17 · Tor Browser</a>
+        <a href="../Lab16/index.html">Lab 16 · P2P Hyperswarm</a>
+        <a href="https://signal.org/bigbrother/" target="_blank">Signal Big Brother</a>
+        <a href="https://wireguard.com" target="_blank">WireGuard Official</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- LIGHTBOX MODAL -->
+  <div id="imageModal" class="modal" onclick="closeModal(event)">
+    <button class="modal-close" onclick="closeModal(event)">×</button>
+    <div class="modal-content" onclick="event.stopPropagation()">
+      <img id="modalImg" src="" alt="Vista previa ampliada">
+      <div id="modalCaption" class="modal-caption"></div>
+    </div>
+  </div>
+
+  <!-- SCRIPT -->
+  <script>
+    function openModal(src, caption) {
+      const modal = document.getElementById('imageModal');
+      const img = document.getElementById('modalImg');
+      const cap = document.getElementById('modalCaption');
+      img.src = src;
+      cap.textContent = caption;
+      modal.classList.add('open');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeModal(event) {
+      const modal = document.getElementById('imageModal');
+      modal.classList.remove('open');
+      document.body.style.overflow = 'auto';
+    }
+
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        const modal = document.getElementById('imageModal');
+        if (modal.classList.contains('open')) {
+          closeModal();
+        }
+      }
+    });
+
+    function copyText(btn) {
+      const code = btn.previousElementSibling.innerText;
+      navigator.clipboard.writeText(code).then(() => {
+        const orig = btn.innerText;
+        btn.innerText = '¡Copiado!';
+        btn.style.background = 'var(--good)';
+        btn.style.color = '#070d18';
+        setTimeout(() => {
+          btn.innerText = orig;
+          btn.style.background = '';
+          btn.style.color = '';
+        }, 2000);
+      });
+    }
+
+    // Smooth active nav link highlighting
+    const sections = document.querySelectorAll('section');
+    const navLinks = document.querySelectorAll('.nav-link');
+
+    window.addEventListener('scroll', () => {
+      let current = '';
+      sections.forEach(section => {
+        const sectionTop = section.offsetTop - 120;
+        if (pageYOffset >= sectionTop) {
+          current = section.getAttribute('id');
+        }
+      });
+
+      navLinks.forEach(link => {
+        link.classList.remove('active');
+        if (link.getAttribute('href') === `#${current}`) {
+          link.classList.add('active');
+        }
+      });
+    });
+  </script>
+</body>
+</html>
