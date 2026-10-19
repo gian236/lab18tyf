@@ -2,7 +2,7 @@
 
 El Safety Number fue comparado presencialmente con mi compañero mediante los dígitos/QR
 mostrados por Signal. Después de confirmar que coincidía en ambos dispositivos, la
-conversación quedó marcada como verificada.
+conversación quedó marcada como verificada (evidencia en `image copy 3.png`).
 
 Un Safety Number diferente podría indicar un cambio de dispositivo o identidad
 criptográfica, pero también podría ser una señal de sustitución de identidad o de un

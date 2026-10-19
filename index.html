@@ -831,23 +831,43 @@
       </div>
 
       <div class="two">
-        <div class="card">
-          <span class="tag">PROTOCOLO SIGNAL</span>
-          <h3>Procedimiento de Verificación</h3>
-          <p>El Safety Number fue contrastado presencialmente con un compañero utilizando los dígitos numéricos y el código QR nativos provistos por el cliente oficial de Signal (Signal Protocol). Una vez confirmada la coincidencia exacta de ambos bloques criptográficos, la conversación fue marcada en el cliente como <strong>Verified</strong>.</p>
-          <div class="callout" style="margin-top:16px">
-            <strong>Garantía Criptográfica:</strong> El Safety Number es una representación formateada (huella SHA-512) generada a partir de las Identity Keys de largo plazo de ambos participantes, permitiendo autenticar la sesión fuera de banda.
+        <div>
+          <div class="card" style="margin-bottom: 20px;">
+            <span class="tag">PROTOCOLO SIGNAL</span>
+            <h3>Procedimiento de Verificación Presencial</h3>
+            <p>El Safety Number fue contrastado presencialmente con un compañero utilizando los 60 dígitos numéricos y el código QR nativos provistos por el cliente oficial de Signal (Signal Protocol). Una vez confirmada la coincidencia exacta de ambos bloques criptográficos, la conversación fue marcada en el cliente como <strong>Verified</strong> (mostrando la opción de <em>Clear Verification</em> en pantalla).</p>
+            <div class="callout" style="margin-top:16px">
+              <strong>Garantía Criptográfica:</strong> El Safety Number es una huella determinista (SHA-512) derivada de las Identity Keys asimétricas de largo plazo de ambos participantes, permitiendo autenticar la sesión fuera de banda sin depender del servidor de Signal.
+            </div>
+          </div>
+
+          <div class="card">
+            <span class="tag">MODELO DE AMENAZAS</span>
+            <h3>¿Qué ataque detectaría un Safety Number que no coincide?</h3>
+            <p>Si el Safety Number difiere entre ambos teléfonos, el protocolo alerta de dos posibles vectores de riesgo:</p>
+            <ul class="list">
+              <li><strong>Ataque Man-in-the-Middle (MITM):</strong> Un adversario (o el propio servidor de Signal si estuviese intervenido) intercepta el intercambio inicial y sustituye las claves públicas de los usuarios para interponerse, descifrar y volver a cifrar el tráfico.</li>
+              <li><strong>Sustitución de Identidad o Compromiso de Dispositivo:</strong> Indica que el peer reinstaló la aplicación en un nuevo dispositivo, regeneró su Identity Key o su cuenta fue clonada en otra terminal.</li>
+            </ul>
           </div>
         </div>
 
-        <div class="card">
-          <span class="tag">MODELO DE AMENAZAS</span>
-          <h3>¿Qué ataque detectaría un Safety Number que no coincide?</h3>
-          <p>Si el Safety Number no coincide entre ambos teléfonos, el protocolo alerta de dos posibles eventos:</p>
-          <ul class="list">
-            <li><strong>Ataque Man-in-the-Middle (MITM):</strong> Un adversario (o el propio servidor de Signal si estuviera comprometido) sustituye las claves públicas de los usuarios para interponerse, descifrar y volver a cifrar el tráfico.</li>
-            <li><strong>Sustitución de Identidad o Compromiso de Dispositivo:</strong> Indica que el peer reinstaló la aplicación en un nuevo dispositivo, cambió su Identity Key o su cuenta fue secuestrada/duplicada en otra terminal.</li>
-          </ul>
+        <div>
+          <figure class="shot" style="height: 100%; display: flex; flex-direction: column; justify-content: space-between;">
+            <div class="shot-img-wrapper" style="height: 420px; background: #060b14;" onclick="openModal('image copy 3.png', 'Signal Oficial: Verificación de Safety Number presencial mediante QR y dígitos con Jose Tanchez. Estado verificado confirmado.')">
+              <img src="image copy 3.png" alt="Verificación de Safety Number en Signal oficial" style="object-fit: contain; max-height: 400px; padding: 6px;">
+              <span class="shot-zoom-hint">🔍 Clic para ampliar</span>
+            </div>
+            <figcaption style="padding-top: 14px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                <strong>image copy 3.png · Safety Number Verificado</strong>
+                <span class="badge badge-no-read" style="font-size: 0.72rem;">ESTADO: VERIFIED</span>
+              </div>
+              <p style="margin: 0; color: var(--muted); font-size: 0.88rem;">
+                Cliente oficial de Signal (iOS). Se verificaron los 12 bloques de 5 dígitos (38114...18083) y el código QR presencialmente con el compañero. Sin números de teléfono expuestos (cumpliendo las reglas del lab).
+              </p>
+            </figcaption>
+          </figure>
         </div>
       </div>
     </section>
